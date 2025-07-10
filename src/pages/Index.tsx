@@ -242,7 +242,7 @@ const Index = () => {
       </div>
 
       <div className="mt-8 text-xs text-gray-600">
-        <p>WARNING: This tool is for educational purposes only.</p>
+        <p>WARNING: This tool is for educational purposes only. Use at your own risk</p>
         <p>Built with Node.js v18.12.0 | OpenSSL 3.0.2 | Platform: linux-x64</p>
       </div>
     </div>
